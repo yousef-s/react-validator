@@ -47,36 +47,36 @@ It must conform to the following rules:
 This can be used if you want to co-locate your validation messages with their rules.
 
 ### Basic usage
+```javascript
+// Some very basic predicate functions
+const isFacebookCEO = v => v === 'Mark Zuckerberg' 
+const isTheBestPirate = v => v === 'JackSparrow'
 
-    // Some very basic predicate functions
-    const isFacebookCEO = v => v === 'Mark Zuckerberg' 
-    const isTheBestPirate = v => v === 'JackSparrow'
+// The state, again, this could come from anywhere
+const state = {
+  fullName: 'Jack Sparrow',
+  bestBuddy: 'Peter Thiel'
+}
 
-    // The state, again, this could come from anywhere
-    const state = {
-      fullName: 'Jack Sparrow',
-      bestBuddy: 'Peter Thiel'
+// The rules we're applying, with both valid validator types
+const rules = {
+  fullName: isFacebookCEO,
+  bestBuddy: {
+    predicate: isTheBestPirate,
+    message: 'Oh no, he's not the best!'
+  }
+}
+
+// The <Validator> component, which you would wrap around whatever you
+// want to have access to the validation.
+<Validator state={state} rules={rules}>
+  {(validation) => {
+    // See below for what the argument `validation` actually is
+    return <input type="text"/>
     }
-
-    // The rules we're applying, with both valid validator types
-    const rules = {
-      fullName: isFacebookCEO,
-      bestBuddy: {
-        predicate: isTheBestPirate,
-        message: 'Oh no, he's not the best!'
-      }
-    }
-
-    // The <Validator> component, which you would wrap around whatever you
-    // want to have access to the validation.
-    <Validator state={state} rules={rules}>
-      {(validation) => {
-        // See below for what the argument `validation` actually is
-        return <input type="text"/>
-        }
-      }
-    </Validator>
-
+  }
+</Validator>
+```
 
 // Awesome, so here's what validation is
     {
