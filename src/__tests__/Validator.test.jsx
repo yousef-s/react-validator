@@ -2,7 +2,6 @@ import React from 'react'
 import { shallow } from 'enzyme'
 import { getValidationState, Validator } from '../Validator'
 
-
 describe('getValidationState(state, rules)', () => {
   it('should call console.error with appropriate message when `rules` has a key that `state` doesnt have', () => {
     const spy = jest.spyOn(console, 'error')
@@ -243,5 +242,84 @@ describe('getValidationState(state, rules)', () => {
 })
 
 describe('<Validator>', () => {
-  
+  const defaultProps = {
+    state: {
+      parentKey: ''
+    },
+    rules: {
+      parentKey: () => true
+    },
+    render: () => <input type="text" className="react-validator" />
+  }
+  it('should render without crashing', () => {
+    expect(shallow(<Validator {...defaultProps} />)).toBeTruthy()
+  })
+
+  it('should call `render` with the result of a call to `getValidationState(state, rules)`', () => {
+    const mockRender = jest.fn(() => <input type="text" />)
+
+    const testState = {
+      parentKey: ''
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const expectedValidationState = getValidationState(testState, testRules)
+    shallow(<Validator state={testState} rules={testRules} render={mockRender}/>)
+
+    expect(mockRender.mock.calls).toHaveLength(1)
+    expect(mockRender.mock.calls[0][0]).toEqual(expectedValidationState)
+  })
+
+  it('should call `onChange` with the result of a call to `getValidationState(state, rules)` and `onChangeKey`', () => {
+    const mockOnChange = jest.fn()
+    const onChangeKey = 'parentKey'
+    const testState = {
+      parentKey: ''
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const expectedValidationState = getValidationState(testState, testRules)
+
+    shallow(
+      <Validator
+        {...defaultProps}
+        state={testState}
+        rules={testRules}
+        onChange={mockOnChange}
+        onChangeKey={onChangeKey}
+      />
+    )
+
+    expect(mockOnChange.mock.calls).toHaveLength(1)
+    expect(mockOnChange.mock.calls[0][0]).toEqual(expectedValidationState)
+    expect(mockOnChange.mock.calls[0][1]).toEqual(onChangeKey)
+  })
+
+  it('should re-call `onChange` and `render` when any of the other props change', () => {
+    const mockRender = jest.fn(() => <input type="text" />)
+    const mockOnChange = jest.fn()
+
+    const wrapper = shallow(
+      <Validator
+        {...defaultProps}
+        render={mockRender}
+        onChange={mockOnChange}
+      />
+    )  
+    wrapper.setProps({
+      state: {
+        parentKey: '',
+        parentKeyB: ''
+      }
+    })
+
+    expect(mockRender.mock.calls).toHaveLength(2)
+    expect(mockOnChange.mock.calls).toHaveLength(2)
+  })
 })
