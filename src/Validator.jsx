@@ -9,11 +9,11 @@ import React from 'react'
  * and whether all rules are valid.
  * @param {Object} state 
  * @param {Object} rules
- * @return {Object} - {validated: <Object>, all: <Boolean>}
+ * @return {Object} - {snapshot: <Object>, all: <Boolean>}
  */
 export function getValidationState(state, rules) {
   let all = true
-  debugger
+
   function validateEach(state, rules) {
     const snapshot = {}
     Object.keys(rules).forEach((key) => {
