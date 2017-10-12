@@ -63,7 +63,7 @@ const rules = {
   fullName: isFacebookCEO,
   bestBuddy: {
     predicate: isTheBestPirate,
-    message: 'Oh no, he's not the best!'
+    message: 'Oh no, he is not the best!'
   }
 }
 
@@ -78,11 +78,13 @@ const rules = {
 </Validator>
 ```
 
+```javascript
 // Awesome, so here's what validation is
-    {
-      all: true, // This will be true when all predicate functions provided to `rules` are also true
-      snapshot: {
-        fullName: { valid: true, message: null },
-        bestBuddy: { valid: true, message: 'Oh no, he's not the best!' }
-      }
-    }
+{
+  all: true, // This will be true when all predicate functions provided to `rules` are also true
+  snapshot: {
+    fullName: { valid: true, message: null },
+    bestBuddy: { valid: true, message: 'Oh no, hes not the best!' }
+  }
+}
+```
