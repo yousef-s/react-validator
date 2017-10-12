@@ -1,0 +1,4 @@
+# Don't commit dependencies
+node_modules/
+
+.vscode/

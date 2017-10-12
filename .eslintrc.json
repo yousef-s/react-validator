@@ -1,0 +1,14 @@
+{
+  "extends": "airbnb",
+  "rules": {
+    "semi": 0,
+    "comma-dangle": 0
+  },
+  "globals": {
+    // Globals for testing
+    "describe": true,
+    "expect": true,
+    "it": true,
+    "jest": true
+  }
+}
