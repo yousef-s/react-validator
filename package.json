@@ -28,6 +28,7 @@
     "react-test-renderer": "15.5"
   },
   "peerDependencies": {
+    "moment": "^2.19.1",
     "prop-types": "^15.6.0",
     "react": ">= 15.5"
   },
@@ -41,6 +42,7 @@
     ]
   },
   "dependencies": {
+    "moment": "^2.19.1",
     "react-dom": "15.5"
   }
 }

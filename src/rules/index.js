@@ -8,6 +8,7 @@ import isObject from './isObject'
 import isRegEx from './isRegEx'
 import isString from './isString'
 import isURL from './isURL'
+import isBetween from './isBetween'
 
 export default {
   isContaining,
@@ -19,5 +20,6 @@ export default {
   isObject,
   isRegEx,
   isString,
-  isURL
+  isURL,
+  isBetween
 }

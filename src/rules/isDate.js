@@ -1,5 +1,5 @@
-export default function isDate(format) {
+import moment from 'moment'
 
-  const regex = ''
-  return value => regex.test(value)
+export default function isDate(format) {
+  return value => moment(value, format, undefined, true).isValid()
 }

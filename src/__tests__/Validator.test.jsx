@@ -1,6 +1,6 @@
 import React from 'react'
 import { shallow } from 'enzyme'
-import { getValidationState, Validator } from '../Validator'
+import Validator, { getValidationState } from '../Validator'
 
 describe('getValidationState(state, rules)', () => {
   it('should call console.error with appropriate message when `rules` has a key that `state` doesnt have', () => {
@@ -16,7 +16,7 @@ describe('getValidationState(state, rules)', () => {
       parentKeyB: () => true,
     }
 
-    getValidationState(testState, testRules)
+    getValidationState(testState, testRules, testState)
 
     const expectedConsoleMessage = 'Validator Error: key provided in rules (parentKeyB) doesn\'t exist in state.'
 
@@ -38,9 +38,33 @@ describe('getValidationState(state, rules)', () => {
       parentKeyA: ''
     }
 
-    getValidationState(testState, testRules)
+    getValidationState(testState, testRules, testState, testState)
 
     const expectedConsoleMessage = 'Validator Error: rule provided for parentKeyA is invalid. Please see documentation.'
+
+    expect(spy).toHaveBeenCalled()
+    expect(spy.mock.calls[0][0]).toBe(expectedConsoleMessage)
+
+    spy.mockRestore()
+  })
+
+  it('should call console.error with appropriate message when data structure of `state` includes a key which isn\'t included in `oldState`', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => false)
+    
+    const testState = {
+      parentKey: ''
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const testOldState = {
+      parentKeyOld: ''
+    }
+
+    const expectedConsoleMessage = 'Validator Error: current state includes a key (parentKey) that initial state didn\'t include.'
+    getValidationState(testState, testRules, testOldState)
 
     expect(spy).toHaveBeenCalled()
     expect(spy.mock.calls[0][0]).toBe(expectedConsoleMessage)
@@ -57,12 +81,12 @@ describe('getValidationState(state, rules)', () => {
       parentKey: v => v === 1
     }
 
-    const validationState = getValidationState(testState, testRules)
+    const validationState = getValidationState(testState, testRules, testState, testState)
     expect(validationState.all).not.toBeUndefined()
     expect(validationState.snapshot).not.toBeUndefined()
   })
 
-  it('should return for each key in `rules` an object of the same key in the snapshot with `valid` and `message` keys', () => {
+  it('should return for each key in `rules` an object of the same key in the snapshot with `valid` and `message` and `modified` keys', () => {
     const testState = {
       parentKeyA: true
     }
@@ -71,10 +95,11 @@ describe('getValidationState(state, rules)', () => {
       parentKeyA: () => true
     }
 
-    const actualSnapshot = getValidationState(testState, testRules).snapshot
+    const actualSnapshot = getValidationState(testState, testRules, testState, testState).snapshot
 
     expect(actualSnapshot.parentKeyA.valid).not.toBeUndefined()
     expect(actualSnapshot.parentKeyA.message).not.toBeUndefined()
+    expect(actualSnapshot.parentKeyA.modified).not.toBeUndefined()
   })
 
   it('should return `all` as false on the returned object if any of the validator predicates return false', () => {
@@ -88,7 +113,7 @@ describe('getValidationState(state, rules)', () => {
       parentKeyB: () => true
     }
 
-    const actualAll = getValidationState(testState, testRules).all
+    const actualAll = getValidationState(testState, testRules, testState, testState).all
     
     expect(actualAll).toBe(false)
   })
@@ -102,7 +127,7 @@ describe('getValidationState(state, rules)', () => {
       parentKeyA: () => true
     }
 
-    const actualAll = getValidationState(testState, testRules).all
+    const actualAll = getValidationState(testState, testRules, testState, testState).all
     expect(actualAll).toBe(true)
   })
 
@@ -138,23 +163,24 @@ describe('getValidationState(state, rules)', () => {
       snapshot: {
         parentKeyA: {
           childKeyA: {
-            gcKeyA: { valid: true, message: 'Hello world!' },
-            gcKeyB: { valid: true, message: null }
+            gcKeyA: { valid: true, message: 'Hello world!', modified: false },
+            gcKeyB: { valid: true, message: null, modified: false }
           }
         },
         parentKeyB: {
           valid: false,
-          message: null
+          message: null,
+          modified: false
         }
       }
     }
 
-    const actualValidationState = getValidationState(testState, testRules)
+    const actualValidationState = getValidationState(testState, testRules, testState, testState)
 
     expect(actualValidationState).toEqual(expectedValidationState)
   })
 
-  it('should return for any key in `rules` which is an object with a `messages` key, it\'s value, for the same rule in the snapshot', () => {
+  it('should return for any key in `rules` which is an object with a `message` key, it\'s value, for the same rule in the snapshot', () => {
     const testState = {
       parentKey: ''
     }
@@ -166,11 +192,11 @@ describe('getValidationState(state, rules)', () => {
       }
     }
 
-    const actualSnapshotParentKey = getValidationState(testState, testRules).snapshot.parentKey
+    const actualSnapshotParentKey = getValidationState(testState, testRules, testState, testState).snapshot.parentKey
     expect(actualSnapshotParentKey.message).toBe('Hello world!')
   })
 
-  it('should return for any key in `rules` which is just a function or that doesnt have a `messages` key, null, for the same rule in the snapshot', () => {
+  it('should return for any key in `rules` which is just a function or that doesnt have a `message` key, null, for the same rule in the snapshot', () => {
     const testState = {
       parentKeyA: '',
       parentKeyB: ''
@@ -184,13 +210,47 @@ describe('getValidationState(state, rules)', () => {
     }
 
     const expectedSnapshot = {
-      parentKeyA: { valid: true, message: null },
-      parentKeyB: { valid: true, message: null }
+      parentKeyA: { valid: true, message: null, modified: false },
+      parentKeyB: { valid: true, message: null, modified: false }
     }
 
-    const actualSnapshot = getValidationState(testState, testRules).snapshot
+    const actualSnapshot = getValidationState(testState, testRules, testState, testState).snapshot
 
     expect(actualSnapshot).toEqual(expectedSnapshot)
+  })
+
+  it('should return for any key in `rules` a `modified` key with value false if `state` and `oldState` are equal for the same key', () => {
+    const testOldState = {
+      parentKey: ''
+    }
+
+    const testState = {
+      parentKey: ''
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const validationState = getValidationState(testState, testRules, testOldState)
+    expect(validationState.snapshot.parentKey.modified).toBe(false)
+  })
+
+  it('should return for any key in `rules` a `modified` key with value true if `state` and `oldState` are not equal for the same key', () => {
+    const testOldState = {
+      parentKey: ''
+    }
+
+    const testState = {
+      parentKey: 'Hello World!'
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const validationState = getValidationState(testState, testRules, testOldState)
+    expect(validationState.snapshot.parentKey.modified).toBe(true)
   })
 
   it('should call a validator function on a `rules` key on the same key in `state` with the value of `state[key]`', () => {
@@ -209,7 +269,7 @@ describe('getValidationState(state, rules)', () => {
       }
     }
 
-    getValidationState(testState, testRules)
+    getValidationState(testState, testRules, testState, testState)
 
     expect(mockValidatorParentA.mock.calls).toHaveLength(1)
     expect(mockValidatorParentB.mock.calls).toHaveLength(1)
@@ -226,13 +286,14 @@ describe('getValidationState(state, rules)', () => {
       parentKeyA: v => v === 'A'
     }
 
-    const actualValidationState = getValidationState(testState, testRules)
+    const actualValidationState = getValidationState(testState, testRules, testState, testState)
     const expectedValidationState = {
       all: true,
       snapshot: {
         parentKeyA: {
           valid: true,
-          message: null
+          message: null,
+          modified: false
         }
       }
     }
@@ -266,7 +327,7 @@ describe('<Validator>', () => {
       parentKey: () => true
     }
 
-    const expectedValidationState = getValidationState(testState, testRules)
+    const expectedValidationState = getValidationState(testState, testRules, testState, testState)
     shallow(<Validator state={testState} rules={testRules} render={mockRender}/>)
 
     expect(mockRender.mock.calls).toHaveLength(1)
@@ -284,7 +345,7 @@ describe('<Validator>', () => {
       parentKey: () => true
     }
 
-    const expectedValidationState = getValidationState(testState, testRules)
+    const expectedValidationState = getValidationState(testState, testRules, testState, testState)
 
     shallow(
       <Validator
@@ -311,7 +372,8 @@ describe('<Validator>', () => {
         render={mockRender}
         onChange={mockOnChange}
       />
-    )  
+    )
+
     wrapper.setProps({
       state: {
         parentKey: '',
@@ -321,5 +383,32 @@ describe('<Validator>', () => {
 
     expect(mockRender.mock.calls).toHaveLength(2)
     expect(mockOnChange.mock.calls).toHaveLength(2)
+  })
+
+  it('should ensure that the instances `oldState` is only set once on instance construction', () => {
+    const testState = {
+      parentKey: ''
+    }
+
+    const testRules = {
+      parentKey: () => true
+    }
+
+    const wrapper = shallow(<Validator {...defaultProps} state={testState} rules={testRules} />)
+    
+    wrapper.setProps({
+      state: {
+        parentKey: 'Hello world!'
+      }
+    })
+
+    wrapper.setProps({
+      state: {
+        parentKey: 'Foo bar'
+      }
+    })
+
+    expect(wrapper.instance().oldState).toEqual(testState)
+  
   })
 })
