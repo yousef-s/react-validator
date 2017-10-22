@@ -135,3 +135,61 @@ An individual snapshot is an object with the following properties:
 ```
 
 ### Advanced Usage
+
+In this section I will cover the following topics. I would also recommend taking a look at the links to fully fledged examples below to see different use cases:
+
+- 1. Out of the box validation predicates
+- 2. Dealing with nested state
+- 3. Dealing with longer or more complex user input cases
+
+### 1. Out of the box validation predicates
+
+A lot of validation rules are quite common, so out of the box I've provided some predicate functions you can use to remove a lot of the boilerplate of setting up predicate functions for basic use cases.
+
+These are taken from a validation.js library and wrapped as needed in order to take a single arguement (the value) and return a result.
+
+A full list of the supported out of the box validation predicates can be found here:
+
+
+### 2. Dealing with nested state
+
+There are cases where you may have nested state, in which validation relies on multiple parts of that nesting passing a particular rule set. As the `<Validator>` component will return snapshots for each level at which it meets a predicate function in the rules passed to it, this is supported.
+
+For example, let's say we have the following state:
+
+```javascript
+const state = {
+  userName: {
+    firstName: 'Paul',
+    lastName: 'Irish'
+  }
+}
+```
+
+We want `userName` only to be valid if the value of `firstName` is `Paul` and the value of `lastName` is `Irish`. We can then use the following rule object:
+
+```javascript
+function isPaulIrish(value) {
+  return value.firstName === 'Paul' && value.lastName === 'Irish'
+}
+const rules = {
+  userName: isPaulIrish
+}
+```
+
+In the callback arguement, the snapshot will be assigned against `userName`, like so:
+
+```javascript
+{
+  all: true,
+  snapshots: {
+    userName: {
+      valid: true,
+      modified: false,
+      hasError() {
+
+      }
+    }
+  }
+}
+```
