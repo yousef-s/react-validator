@@ -9,9 +9,7 @@ Below is a list of the predicate functions offered out of the box with React Val
 Each of the supported predicate functions are available for importing from the "main" library location:
 
 ```javascript
-import validators, { isEmail }  from 'react-validator/rules'
-
-validators.isEmail === isEmail
+import { isEmail }  from 'react-validator/rules'
 ```
 
 Or, if you only want to import a sub-set of the library:
@@ -34,7 +32,9 @@ isObject | Returns true when given an object. False otherwise.
 isString | Returns true when given a string. False otherwise.
 isArray | Returns true when given an array. False otherwise.
 
-*The below functions all return functions which act as the predicates. This means that you provide "options" e.g. the range up-front, and allows for easy use with rules, for example:*
+### Advanced Predicates (Curried Functions)
+
+*The below functions all return functions which act as the predicates (curried functions). This means that you provide "options" e.g. the range up-front, and allows for easy use with rules, for example:*
 
 `isBetween(30, 40) -> ƒ(value)`
 
@@ -46,13 +46,6 @@ isBetween(min = *Number* , max = *Number*) | Returns true if the value is betwee
 isContaining(substring = *String*) | Returns true if the value contains the sub-string. False otherwise.
 isMatch(regex = *String*) | Returns true if the value matches the regex. **Regex should be supplied as a string**. False otherwise.
 isInArray(array = *Array*) | Returns true when given a value that is in `array`, false otherwise. Useful for allowing/disallowing certain values.
-
-
-```javascript
-const rules = {
-  age: isBetween(13, 50)
-}
-```
 
 ### Data-Specific Checkers
 
@@ -70,9 +63,11 @@ Function Name | Description
 ------------- | -----------
 isNotRequired(predicate = *Function*) | Returns true if given an empty value or when the predicate function returns true if non-empty. For everything else, it will return false.
 
-Empty Values:
+**What's an "empty" value?**
 
-- 0
-- ''
-- null
-- undefined
+The following values are considered empty values with respect to `isNotRequired()`:
+
+- `0`
+- `''`
+- `null`
+- `undefined`
