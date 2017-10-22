@@ -90,7 +90,7 @@ For example, using the above `state` and `rules`:
 <Validator state={state} rules={rules} render={(validation) => {
   // What is validation?
 
-  const { firstName } = validation.snapshot.userName.firstName
+  const { firstName } = validation.snapshots.userName.firstName
 
   return (
     <input type="text" value={this.props.userName.firstName}>
@@ -104,25 +104,32 @@ For example, using the above `state` and `rules`:
 
 ### What is the value of the object the callback is called with?
 
-As you can see above, the callback provided to `render` takes a single argument. The value of that argument for the above example will be:
+As you can see above, the callback provided to `render` takes a single argument. The value of that argument contains information you can use to identify whether all rules have returned valid, and a breakdown of how each rule performed (a "snapshot").
+
+For the above example, the value of the argument will be:
 
 ```javascript
-const validation = {
-  all: false, // Is true ONLY if all rules are valid. Useful for disabling page-continuation or form submission when false.
-  snapshot: {
+{
+  all: false, // true ONLY when all rules are valid, false otherwise
+  snapshots: {
     userName: {
-      firstName: {
-        valid: true, // Is this value valid?
-        modifed: false, // Has the value been modified from initial state?
-        isValid: function() {}, // Will return true only if the value is valid, or hasn't been modified, useful for displaying messages.
-      }
+      firstName: Snapshot
     },
-    age: {
-      valid: false,
-      modified: false,
-      isValid: function() {}
-    }
-    ...
+    age: Snapshot
+  }
+}
+```
+
+An individual snapshot is an object with the following properties:
+
+```javascript
+{
+  valid: true, // true or false, if the value is valid
+  modified: true, // true or false if the value has been modified from it's initial value
+  hasError() {
+    // returns true if valid is false or modified is true
+    // useful for displaying error messages, as initial state
+    // will return false
   }
 }
 ```
