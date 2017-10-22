@@ -38,7 +38,7 @@ isArray | Returns true when given an array. False otherwise.
 
 Function Name | Description
 ------------- | -----------
-isBetween(min*{Number}*, max*{Number}*) | Returns true if the value is between min and max. False otherwise.
+isBetween(min = *{Number}* , max*{Number}*) | Returns true if the value is between min and max. False otherwise.
 isContaining(substring*{String}*) | Returns true if the value contains the sub-string. False otherwise.
 isMatch(regex*{String}*) | Returns true if the value matches the regex. **Regex should be supplied as a string**. False otherwise.
 isInArray(array*{Array}*) | Returns true when given a value that is in `array`, false otherwise. Useful for allowing/disallowing certain values.
