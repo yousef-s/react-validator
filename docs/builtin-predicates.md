@@ -22,10 +22,11 @@ import isEmail from 'react-validator/rules/isEmail'
 
 ## Available predicates
 
+
 ### Type Checkers
 
 Function Name | Description 
-_____________ | ___________
+------------- | -----------
 isNumber | Returns true when given a valid number (as string or number). False otherwise.
 isInteger | Returns true when given a valid integer (as string or number). False otherwise.
 isFloat | Returns true when given a valid integer (as string or number). False otherwise.
@@ -36,7 +37,7 @@ isArray | Returns true when given an array. False otherwise.
 ### Range/Matching Checkers
 
 Function Name | Description
-_____________ | ___________
+------------- | -----------
 isBetween(min<Number>, max<Number>) | Returns true if the value is between min and max. False otherwise.
 isContaining(substring<String>) | Returns true if the value contains the sub-string. False otherwise.
 isMatch(regex<String>) | Returns true if the value matches the regex. **Regex should be supplied as a string**. False otherwise.
@@ -54,7 +55,7 @@ const rules = {
 ### Useful Helpers
 
 Function Name | Description
-_____________ | ___________
+------------- | -----------
 isEmail(options<Object>) | Returns true when given a valid email. Wraps [validator.js](https://github.com/chriso/validator.js/) isEmail implementation, with same `options`. False otherwise.
 isURL(options<Object>) | Returns true when given a valid URL. Wraps [validator.js](https://github.com/chriso/validator.js/) isURL implementation, with same `options`. False otherwise.
 isDate(format<String>) | Returns true when given a valid date that matches `format`. False otherwise. Check [moment.js documentation](https://momentjs.com/docs/#/parsing/string-format/) for more info on building format strings.
