@@ -1,90 +1,130 @@
-## React Validator
+# React Validator
 
-**This is still a work in progress - hold your horses :)!**
+In progress.
 
-### What is "React Validator"?
+## What is React Validator?
 
-React Validator is a versatile validation "library" that you can use to implement validation wherever you use React.
+React Validator is a library built in order to simply the proccess of validating user input within React applications. It is unopinionated, and remains versatile in that it is completely agnostic to how you manage your state and how you want to display validation state to your users.
 
-### Why use React Validator?
+## Installation
 
-The idea is that this provides a way to validate user input or anything else, while remaning completely agnostic and de-coupled from the following:
+React Validator has been tested with React v15.5+, although I'm planning to test on earlier releases when I get a chance.
 
-- How you manage state (it doesn't care if you use Redux, Flux, MobX or even if all your state exists within components)
-- How you want to display validation to the user (a lot of validation libraries are concerned with how you want to display validation, e.g. inserting new DOM nodes, adding classes to existing nodes etc)
+If you're using npm to manage dependencies:
 
-### How does this work?
+```
+npm install react-validator
+```
 
-This library exposes two sets of things:
+If you're using yarn to manage dependencies:
 
-- A `<Validator>` component, which uses the aptly named "render prop" pattern (see this for why I've chosen to use the render prop pattern instead of the HOC pattern)
+```
+yarn add react-validator
+```
 
-- A set of utility predicate functions for common validation needs (functions which take an input, and return true or false based on whether the input satisfies a condition)
+## Basic Usage
 
-The `<Validator>` component has two primary props, both of which take objects as their value.
+The library exposes a `<Validator>` component as well as a bunch of predicate functions which can speed up your productivity.
 
-The `state` prop is used to describe the "what" to validate.
+### Using the <Validator> component
 
-It can be structured however you please and nested as deep as you like. A good example of what you would provide to this an existing prop if your managing your user input state outside of your component (e.g. with Redux), or `this.state` if you're containing your user input state within your component.
+The `<Validator>` component takes three props:
 
-The `rules` prop is used to describe the "how" to validate.
+- `state` - An object that contains the data you want to validate. This should contain the user's input, and likely will be either your component's state or state from a store if you manage user input state externally to your component (e.g. Flux, Redux, etc).
 
-It must conform to the following rules:
+- `rules` - An object that describes how your `state` object should be validated. This will have the same data structure as your `state` object, with a few differences (explained below).
 
-- It must be structured the same as the `state` prop (with a few exceptions, please see these examples)
+- `render` - A function that takes as it's only arguement the outcome of validating the `state` prop with `rules`. Follows the render-prop pattern (read more about this).
 
-- When you wish to validate the value of a property on `state`, you provide a "validator". A validator is one of two types:
+### Setting up state
 
-1. A predicate function, which will take the value of `state[key]` and return true or false.
+As mentioned above, state should be an object that contains your user input state. This could be your component's state e.g. `this.state` or a prop if you manage your user input as store-based state (Flux, Redux, etc) e.g. `this.props.form`.
 
-2. An object of the following structure:
+This object can be nested as deep as you like.
 
-{
-  predicate: <Function>,
-  message: <Any>
-}
+For example:
 
-This can be used if you want to co-locate your validation messages with their rules.
-
-### Basic usage
 ```javascript
-// Some very basic predicate functions
-const isFacebookCEO = v => v === 'Mark Zuckerberg' 
-const isTheBestPirate = v => v === 'JackSparrow'
-
-// The state, again, this could come from anywhere
 const state = {
-  fullName: 'Jack Sparrow',
-  bestBuddy: 'Peter Thiel'
+  userName: {
+    firstName: 'Dan',
+    lastName: 'Abramov'
+  },
+  age: 30,
+  currentEmployer: 'Facebook'
 }
-
-// The rules we're applying, with both valid validator types
-const rules = {
-  fullName: isFacebookCEO,
-  bestBuddy: {
-    predicate: isTheBestPirate,
-    message: 'Oh no, he is not the best!'
-  }
-}
-
-// The <Validator> component, which you would wrap around whatever you
-// want to have access to the validation.
-<Validator state={state} rules={rules}>
-  {(validation) => {
-    // See below for what the argument `validation` actually is
-    return <input type="text"/>
-    }
-  }
-</Validator>
 ```
+
+### Setting up rules
+
+This is an object that has almost the same structure as `state` except for where a key is meant to be validated, a predicate function is provided in order to validate that key in `state`. You can also optionally provide a message if you want to co-locate your message and validation rules.
+
+A predicate function, in this case, is a function which takes an input (in this case the value of the key in `state`) and returns `true` or `false` depending on whether the value is valid.
+
+For example (based on the above `state`):
 
 ```javascript
-// Awesome, so here's what validation is
-{
-  all: true, // This will be true when all predicate functions provided to `rules` are also true
+
+function isFirstNameDan(firstName) {
+  return firstName === 'Dan'
+}
+
+// Simple rule definition using only predicate functions,
+// one for each key
+const rules = {
+  userName: {
+    firstName: isFirstNameDan
+  },
+  age: (value) => value < 25
+}
+```
+
+### Setting up render
+
+When either `rules` or `state` is updated, the `<Validator>` component will re-render it's render-prop. It caches the initially supplied `state`, in order to determine whether or not anything has actually been changed (for a more in-depth explanation please see here).
+
+
+For example, using the above `state` and `rules`:
+
+```javascript
+<Validator state={state} rules={rules} render={(validation) => {
+  // What is validation?
+
+  const { firstName } = validation.snapshot.userName.firstName
+
+  return (
+    <input type="text" value={this.props.userName.firstName}>
+    {
+      !firstName.isValid() &&
+      <span className="invalid">This first name is not valid.</span>
+    }
+  )
+}}>
+```
+
+### What is the value of the object the callback is called with?
+
+As you can see above, the callback provided to `render` takes a single argument. The value of that argument for the above example will be:
+
+```javascript
+const validation = {
+  all: false, // Is true ONLY if all rules are valid. Useful for disabling page-continuation or form submission when false.
   snapshot: {
-    fullName: { valid: true, message: null },
-    bestBuddy: { valid: true, message: 'Oh no, hes not the best!' }
+    userName: {
+      firstName: {
+        valid: true, // Is this value valid?
+        modifed: false, // Has the value been modified from initial state?
+        isValid: function() {}, // Will return true only if the value is valid, or hasn't been modified, useful for displaying messages.
+      }
+    },
+    age: {
+      valid: false,
+      modified: false,
+      isValid: function() {}
+    }
+    ...
   }
 }
 ```
+
+### Advanced Usage
