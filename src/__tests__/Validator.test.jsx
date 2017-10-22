@@ -1,8 +1,36 @@
 import React from 'react'
 import { shallow } from 'enzyme'
-import Validator, { getValidationState } from '../Validator'
+import Validator, { getValidationState, Snapshot } from '../Validator'
 
-describe('getValidationState(state, rules)', () => {
+describe('Snapshot Constructor: Snapshot(valid, message, modified)', () => {
+  it('should create an instance of Snapshot with the following properties `valid`, `message`, `modified` and `hasError` set according to arguments', () => {
+    const newInstance = new Snapshot(true, 'Hello world!', false)
+    expect(newInstance.valid).toBe(true)
+    expect(newInstance.message).toBe('Hello world!', false)
+    expect(newInstance.modified).toBe(false)
+    expect(newInstance.hasError).not.toBeUndefined()
+  })
+
+  it('should create an instance of Snapshot with the `message` property set to null when the `message` argument is undefined', () => {
+    const newInstance = new Snapshot(true, undefined, false)
+    expect(newInstance.message).toBe(null)
+  })
+
+  it('Snapshot.hasError() should return true when `valid` is false and `modified` is true', () => {
+    const newInstance = new Snapshot(false, undefined, true)
+    expect(newInstance.hasError()).toBeTruthy()
+  })
+
+  it('Snapshot.hasError() should return false when `valid` is true', () => {
+    const newInstanceNotModified = new Snapshot(true, undefined, false)
+    const newInstanceModified = new Snapshot(true, undefined, true)
+
+    expect(newInstanceModified.hasError()).toBeFalsy()
+    expect(newInstanceNotModified.hasError()).toBeFalsy()
+  })
+})
+
+describe('getValidationState(state, rules, oldState)', () => {
   it('should call console.error with appropriate message when `rules` has a key that `state` doesnt have', () => {
     const spy = jest.spyOn(console, 'error')
       .mockImplementation(() => false) // Surpress outputting to console during test
@@ -48,7 +76,7 @@ describe('getValidationState(state, rules)', () => {
     spy.mockRestore()
   })
 
-  it('should call console.error with appropriate message when data structure of `state` includes a key which isn\'t included in `oldState`', () => {
+  it('should call console.error with appropriate message when structure of `state` includes a key which isn\'t included in `oldState`', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation(() => false)
     
     const testState = {
@@ -72,7 +100,7 @@ describe('getValidationState(state, rules)', () => {
     spy.mockRestore()
   })
 
-  it('should return an object with an `all` key and a `snapshot` key', () => {
+  it('should return an object with an `all` key and a `snapshots` key', () => {
     const testState = {
       parentKey: 1
     }
@@ -83,10 +111,10 @@ describe('getValidationState(state, rules)', () => {
 
     const validationState = getValidationState(testState, testRules, testState, testState)
     expect(validationState.all).not.toBeUndefined()
-    expect(validationState.snapshot).not.toBeUndefined()
+    expect(validationState.snapshots).not.toBeUndefined()
   })
 
-  it('should return for each key in `rules` an object of the same key in the snapshot with `valid` and `message` and `modified` keys', () => {
+  it('should return for each key in `rules` a valid Snapshot instance', () => {
     const testState = {
       parentKeyA: true
     }
@@ -95,14 +123,12 @@ describe('getValidationState(state, rules)', () => {
       parentKeyA: () => true
     }
 
-    const actualSnapshot = getValidationState(testState, testRules, testState, testState).snapshot
+    const actualSnapshot = getValidationState(testState, testRules, testState, testState).snapshots
 
-    expect(actualSnapshot.parentKeyA.valid).not.toBeUndefined()
-    expect(actualSnapshot.parentKeyA.message).not.toBeUndefined()
-    expect(actualSnapshot.parentKeyA.modified).not.toBeUndefined()
+    expect(actualSnapshot.parentKeyA instanceof Snapshot).toBeTruthy()
   })
 
-  it('should return `all` as false on the returned object if any of the validator predicates return false', () => {
+  it('should return `all` as false on the returned object if any of the predicates return false', () => {
     const testState = {
       parentKeyA: '',
       parentKeyB: ''
@@ -118,7 +144,7 @@ describe('getValidationState(state, rules)', () => {
     expect(actualAll).toBe(false)
   })
 
-  it('should return `all` as true on the returned object if all of the validator predicates return true', () => {
+  it('should return `all` as true on the returned object if all of the predicates return true', () => {
     const testState = {
       parentKeyA: ''
     }
@@ -131,7 +157,7 @@ describe('getValidationState(state, rules)', () => {
     expect(actualAll).toBe(true)
   })
 
-  it('should return valid `snapshot` and `all` keys when operating on nested rules and state objects', () => {
+  it('should support operating on nested objects for `state` and `rules`', () => {
     const testState = {
       parentKeyA: {
         childKeyA: {
@@ -160,7 +186,7 @@ describe('getValidationState(state, rules)', () => {
 
     const expectedValidationState = {
       all: false,
-      snapshot: {
+      snapshots: {
         parentKeyA: {
           childKeyA: {
             gcKeyA: { valid: true, message: 'Hello world!', modified: false },
@@ -180,46 +206,7 @@ describe('getValidationState(state, rules)', () => {
     expect(actualValidationState).toEqual(expectedValidationState)
   })
 
-  it('should return for any key in `rules` which is an object with a `message` key, it\'s value, for the same rule in the snapshot', () => {
-    const testState = {
-      parentKey: ''
-    }
-
-    const testRules = {
-      parentKey: {
-        predicate: () => true,
-        message: 'Hello world!'
-      }
-    }
-
-    const actualSnapshotParentKey = getValidationState(testState, testRules, testState, testState).snapshot.parentKey
-    expect(actualSnapshotParentKey.message).toBe('Hello world!')
-  })
-
-  it('should return for any key in `rules` which is just a function or that doesnt have a `message` key, null, for the same rule in the snapshot', () => {
-    const testState = {
-      parentKeyA: '',
-      parentKeyB: ''
-    }
-
-    const testRules = {
-      parentKeyA: () => true,
-      parentKeyB: {
-        predicate: () => true
-      }
-    }
-
-    const expectedSnapshot = {
-      parentKeyA: { valid: true, message: null, modified: false },
-      parentKeyB: { valid: true, message: null, modified: false }
-    }
-
-    const actualSnapshot = getValidationState(testState, testRules, testState, testState).snapshot
-
-    expect(actualSnapshot).toEqual(expectedSnapshot)
-  })
-
-  it('should return for any key in `rules` a `modified` key with value false if `state` and `oldState` are equal for the same key', () => {
+  it('should return a Snapshot instance with `modified` false, if relevant key in `state` and `oldState` are equal', () => {
     const testOldState = {
       parentKey: ''
     }
@@ -233,10 +220,10 @@ describe('getValidationState(state, rules)', () => {
     }
 
     const validationState = getValidationState(testState, testRules, testOldState)
-    expect(validationState.snapshot.parentKey.modified).toBe(false)
+    expect(validationState.snapshots.parentKey.modified).toBe(false)
   })
 
-  it('should return for any key in `rules` a `modified` key with value true if `state` and `oldState` are not equal for the same key', () => {
+  it('should return a Snapshot instance with `modified` as true, if key in `state` and `oldState` are not equal', () => {
     const testOldState = {
       parentKey: ''
     }
@@ -250,10 +237,10 @@ describe('getValidationState(state, rules)', () => {
     }
 
     const validationState = getValidationState(testState, testRules, testOldState)
-    expect(validationState.snapshot.parentKey.modified).toBe(true)
+    expect(validationState.snapshots.parentKey.modified).toBe(true)
   })
 
-  it('should call a validator function on a `rules` key on the same key in `state` with the value of `state[key]`', () => {
+  it('should call the predicate on a `rules` key on the same key in `state` with the value of `state[key]`', () => {
     const testState = {
       parentKeyA: 'A',
       parentKeyB: 'B'
@@ -277,7 +264,7 @@ describe('getValidationState(state, rules)', () => {
     expect(mockValidatorParentB.mock.calls[0][0]).toBe(testState.parentKeyB)
   })
 
-  it('should return a valid snapshot when a `rules` key value is simply a function', () => {
+  it('should support passing predicates as just a function', () => {
     const testState = {
       parentKeyA: 'A'
     }
@@ -289,7 +276,7 @@ describe('getValidationState(state, rules)', () => {
     const actualValidationState = getValidationState(testState, testRules, testState, testState)
     const expectedValidationState = {
       all: true,
-      snapshot: {
+      snapshots: {
         parentKeyA: {
           valid: true,
           message: null,
@@ -300,6 +287,11 @@ describe('getValidationState(state, rules)', () => {
 
     expect(actualValidationState).toEqual(expectedValidationState)
   })
+
+  it('should support passing predicates as an object with `predicate` and `message` keys', () => {
+
+  })
+
 })
 
 describe('<Validator>', () => {
@@ -316,7 +308,7 @@ describe('<Validator>', () => {
     expect(shallow(<Validator {...defaultProps} />)).toBeTruthy()
   })
 
-  it('should call `render` with the result of a call to `getValidationState(state, rules)`', () => {
+  it('should call `render` with the result of a call to `getValidationState(state, rules, oldState)`', () => {
     const mockRender = jest.fn(() => <input type="text" />)
 
     const testState = {
@@ -334,7 +326,7 @@ describe('<Validator>', () => {
     expect(mockRender.mock.calls[0][0]).toEqual(expectedValidationState)
   })
 
-  it('should call `onChange` with the result of a call to `getValidationState(state, rules)` and `onChangeKey`', () => {
+  it('should call `onChange` with the result of a call to `getValidationState(state, rules, oldState)` and `onChangeKey`', () => {
     const mockOnChange = jest.fn()
     const onChangeKey = 'parentKey'
     const testState = {

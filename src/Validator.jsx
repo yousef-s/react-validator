@@ -1,20 +1,23 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-function Snapshot(valid, message, modified) {
+/**
+ * Snapshot constructor
+ * @param {Boolean} valid
+ * @param {String|Undefined} message 
+ * @param {Boolean} modified 
+ */
+export function Snapshot(valid, message, modified) {
   this.valid = valid
   this.message = message || null
   this.modified = modified
-
-  return this
 }
 
-Snapshot.prototype.isValid = function() {
-  return this.valid && this.modified
-}
-
-function createSnapshot(valid, message, modified) {
-  return new Snapshot(valid, message, modified)
+/**
+ * Determine whether or not to display an error.
+ */
+Snapshot.prototype.hasError = function hasError() {
+  return !this.valid && this.modified
 }
 
 /**
@@ -33,7 +36,7 @@ export function getValidationState(state, rules, oldState) {
 
   function validateEach(state, rules, oldState) {
     // console.log('State:', state, oldState, oldState === state)
-    const snapshot = {}
+    const snapshots = {}
     Object.keys(rules).forEach((key) => {
       // If the provided key doesn't exist in state, then early return
       // and log an error to console.
@@ -58,7 +61,7 @@ export function getValidationState(state, rules, oldState) {
       // This to catch nested objects, with nested rulesets, call this function
       // recursively
       if (typeof rules[key] === 'object' && typeof rules[key].predicate === 'undefined') {
-        snapshot[key] = validateEach(state[key], rules[key], oldState[key])
+        snapshots[key] = validateEach(state[key], rules[key], oldState[key])
       }
 
       // If this is a parent object, lets not continue
@@ -76,21 +79,17 @@ export function getValidationState(state, rules, oldState) {
         all = false
       }
 
-      snapshot[key] = {
-        valid,
-        modified,
-        message: rules[key].message || null,
-      }
+      snapshots[key] = new Snapshot(valid, rules[key].message, modified)
     })
 
-    return snapshot
+    return snapshots
   }
 
-  const snapshot = validateEach(state, rules, oldState)
+  const snapshots = validateEach(state, rules, oldState)
 
   return {
     all,
-    snapshot
+    snapshots
   }
 }
 
@@ -127,18 +126,6 @@ export class Validator extends React.Component {
     return render(validation)
   }
 }
-
-// export const Validator = ({ state, rules, render, onChange, onChangeKey }) => {
-//   // Create a cache for hasBeenModified rules
-//   // If initial render, then set cache to this, otheriwse no
-//   // Iterate over rules
-//   const validationState = getValidationState(state, rules, cache)
-//   // If onChange has been set, then let's call it if it's a function
-//   if (typeof onChange === 'function') {
-//     onChange(validationState, onChangeKey)
-//   }
-//   return render(validationState)
-// }
 
 Validator.defaultProps = {
   onChange: null,
