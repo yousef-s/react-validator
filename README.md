@@ -134,13 +134,13 @@ An individual snapshot is an object with the following properties:
 }
 ```
 
-### Advanced Usage
+## Advanced Usage
 
-In this section I will cover the following topics. I would also recommend taking a look at the links to fully fledged examples below to see different use cases:
+In this section I will cover the following topics:
 
-- 1. Out of the box validation predicates
-- 2. Dealing with nested state
-- 3. Dealing with longer or more complex user input cases
+1. Out of the box validation predicates
+2. Dealing with nested state
+3. Recommended examples
 
 ### 1. Out of the box validation predicates
 
@@ -172,6 +172,7 @@ We want `userName` only to be valid if the value of `firstName` is `Paul` and th
 function isPaulIrish(value) {
   return value.firstName === 'Paul' && value.lastName === 'Irish'
 }
+
 const rules = {
   userName: isPaulIrish
 }
@@ -193,3 +194,9 @@ In the callback arguement, the snapshot will be assigned against `userName`, lik
   }
 }
 ```
+
+### 3. Recommended examples
+
+- All user input in a single component
+- User input spanning multiple components
+- Avoiding verbose re-rendering
