@@ -56,6 +56,6 @@ const rules = {
 
 Function Name | Description
 ------------- | -----------
-isEmail(options<Object>) | Returns true when given a valid email. Wraps [validator.js](https://github.com/chriso/validator.js/) isEmail implementation, with same `options`. False otherwise.
-isURL(options<Object>) | Returns true when given a valid URL. Wraps [validator.js](https://github.com/chriso/validator.js/) isURL implementation, with same `options`. False otherwise.
-isDate(format<String>) | Returns true when given a valid date that matches `format`. False otherwise. Check [moment.js documentation](https://momentjs.com/docs/#/parsing/string-format/) for more info on building format strings.
+isEmail(options {Object}) | Returns true when given a valid email. Wraps [validator.js](https://github.com/chriso/validator.js/) isEmail implementation, with same `options`. False otherwise.
+isURL(options <Object>) | Returns true when given a valid URL. Wraps [validator.js](https://github.com/chriso/validator.js/) isURL implementation, with same `options`. False otherwise.
+isDate(format <String>) | Returns true when given a valid date that matches `format`. False otherwise. Check [moment.js documentation](https://momentjs.com/docs/#/parsing/string-format/) for more info on building format strings.
