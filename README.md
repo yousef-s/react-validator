@@ -6,6 +6,12 @@ In progress.
 
 React Validator is a library built in order to simply the proccess of validating user input within React applications. It is unopinionated, and remains versatile in that it is completely agnostic to how you manage your state and how you want to display validation state to your users.
 
+## Table of Contents
+
+1. [Installation](#installation)
+2. [Basic Usage](#basic-usage)
+3. [Advanced Usage](#advanced-usage)
+
 ## Installation
 
 React Validator has been tested with React v15.5+, although I'm planning to test on earlier releases when I get a chance.
