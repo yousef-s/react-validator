@@ -38,20 +38,22 @@ The `<Validator>` component takes three props:
 
 ### Setting up state
 
-As mentioned above, state should be an object that contains your user input state. This could be your component's state e.g. `this.state` or a prop if you manage your user input as store-based state (Flux, Redux, etc) e.g. `this.props.form`.
+As mentioned above, state should be an object that contains your user input state. This could be your component's state e.g. `this.state` or props if you manage your user input as store-based state (Flux, Redux, etc) e.g. `this.props`.
 
 This object can be nested as deep as you like.
 
 For example:
 
 ```javascript
-const state = {
+{
   userName: {
     firstName: 'Dan',
-    lastName: 'Abramov'
+    lastName: 'Abramov',
+    aliases: {
+      github: 'gaeron'
+    }
   },
-  age: 30,
-  currentEmployer: 'Facebook'
+  age: 30
 }
 ```
 
@@ -64,16 +66,9 @@ A predicate function, in this case, is a function which takes an input (in this 
 For example (based on the above `state`):
 
 ```javascript
-
-function isFirstNameDan(firstName) {
-  return firstName === 'Dan'
-}
-
-// Simple rule definition using only predicate functions,
-// one for each key
-const rules = {
+{
   userName: {
-    firstName: isFirstNameDan
+    firstName: firstName => firstName === 'Dan'
   },
   age: (value) => value < 25
 }
@@ -88,17 +83,7 @@ For example, using the above `state` and `rules`:
 
 ```javascript
 <Validator state={state} rules={rules} render={(validation) => {
-  // What is validation?
-
-  const { firstName } = validation.snapshots.userName.firstName
-
-  return (
-    <input type="text" value={this.props.userName.firstName}>
-    {
-      !firstName.isValid() &&
-      <span className="invalid">This first name is not valid.</span>
-    }
-  )
+  // What is validation? See below!
 }}>
 ```
 
@@ -120,83 +105,23 @@ For the above example, the value of the argument will be:
 }
 ```
 
-An individual snapshot is an object with the following properties:
+An individual snapshot is an object with the following methods:
 
-```javascript
-{
-  valid: true, // true or false, if the value is valid
-  modified: true, // true or false if the value has been modified from it's initial value
-  hasError() {
-    // returns true if valid is false or modified is true
-    // useful for displaying error messages, as initial state
-    // will return false
-  }
-}
-```
+Method Name | Possible Return Values | Description
+-------------------- | --------------- | -----------
+isValid | true or false | Returns true if the value is valid, false otherwise.
+isDefault | true or false | Returns true if the value is the same as initial state, false otherwise.
 
 ## Advanced Usage
 
-In this section I will cover the following topics:
+It's recommended that you take a look at the following documentation:
 
-1. Out of the box validation predicates
-2. Dealing with nested state
-3. Recommended examples
+- Pattern: Using CSS classes to display validation state
+- Built-in predicate functions
+- Built-in utility functions
+- Lifting up validation state
 
-### 1. Out of the box validation predicates
+And the following examples:
 
-A lot of validation rules are quite common, so out of the box I've provided some predicate functions you can use to remove a lot of the boilerplate of setting up predicate functions for basic use cases.
-
-These are taken from a validation.js library and wrapped as needed in order to take a single arguement (the value) and return a result.
-
-A full list of the supported out of the box validation predicates can be found here:
-
-
-### 2. Dealing with nested state
-
-There are cases where you may have nested state, in which validation relies on multiple parts of that nesting passing a particular rule set. As the `<Validator>` component will return snapshots for each level at which it meets a predicate function in the rules passed to it, this is supported.
-
-For example, let's say we have the following state:
-
-```javascript
-const state = {
-  userName: {
-    firstName: 'Paul',
-    lastName: 'Irish'
-  }
-}
-```
-
-We want `userName` only to be valid if the value of `firstName` is `Paul` and the value of `lastName` is `Irish`. We can then use the following rule object:
-
-```javascript
-function isPaulIrish(value) {
-  return value.firstName === 'Paul' && value.lastName === 'Irish'
-}
-
-const rules = {
-  userName: isPaulIrish
-}
-```
-
-In the callback arguement, the snapshot will be assigned against `userName`, like so:
-
-```javascript
-{
-  all: true,
-  snapshots: {
-    userName: {
-      valid: true,
-      modified: false,
-      hasError() {
-
-      }
-    }
-  }
-}
-```
-
-### 3. Recommended examples
-
-- All user input in a single component
-- User input spanning multiple components
-- Avoiding verbose re-rendering
+- Stateful Component (React only)
+- Stateless Functional Component (React and Redux)
