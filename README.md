@@ -41,7 +41,7 @@ Prop Name | Description
 state | An object that contains the data you want to validate. This should contain the user's input, and likely will be either your component's state or state from a store if you manage user input state externally to your component (e.g. Flux, Redux, etc).
 rules | An object that describes how your `state` object should be validated. This will have the same data structure as your `state` object, with a few differences (explained below).
 render | A function that takes as it's only arguement the outcome of validating the `state` prop with `rules`. Follows the render-prop pattern (read more about this).
-onChange | A callback that will fire whenever the instance of `<Validator>` is updated. For advanced use cases (see [Lifting up state](blob/master/docs/lifting-validation-state.md)).
+onChange | A callback that will fire whenever the instance of `<Validator>` is updated. For advanced use cases (see [Lifting up validation state](docs/lifting-validation-state.md)).
 onChangeKey | An indentifier that will be supplied to the `onChange` callback to help identify which instance of `<Validator>` was the callee.
 
 ### Setting up state
@@ -126,10 +126,10 @@ isDefault | true or false | Returns true if the value is the same as initial sta
 
 It's recommended that you take a look at the following documentation:
 
-- [Pattern: Using CSS classes to display validation state](blob/master/docs/patterns-using-css-classes.md)
-- [Built-in predicate functions](blob/master/docs/builtin-predicates.md)
-- [Built-in utility functions](blob/master/docs/builtin-utility-functions.md)
-- [Lifting up validation state](blob/master/docs/lifting-validation-state.md)
+- [Pattern: Using CSS classes to display validation state](ocs/patterns-using-css-classes.md)
+- [Built-in predicate functions](docs/builtin-predicates.md)
+- [Built-in utility functions](docs/builtin-utility-functions.md)
+- [Lifting up validation state](docs/lifting-validation-state.md)
 
 And the following examples:
 
