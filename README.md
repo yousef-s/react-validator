@@ -126,7 +126,7 @@ isDefault | true or false | Returns true if the value is the same as initial sta
 
 It's recommended that you take a look at the following documentation:
 
-- [Pattern: Using CSS classes to display validation state](ocs/patterns-using-css-classes.md)
+- [Pattern: Using CSS classes to display validation state](docs/patterns-using-css-classes.md)
 - [Built-in predicate functions](docs/builtin-predicates.md)
 - [Built-in utility functions](docs/builtin-utility-functions.md)
 - [Lifting up validation state](docs/lifting-validation-state.md)
