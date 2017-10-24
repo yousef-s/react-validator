@@ -20,6 +20,10 @@ import isEmail from 'react-validator/rules/isEmail'
 
 ## Available predicates
 
+1. [Type Checkers](#type-checkers)
+2. [Range/Matching Checkers](#rangematching-checkers)
+3. [Data-Specific Checkers](#data-specific-checkers)
+4. [Requirement Checkers](#requirement-checkers)
 
 ### Type Checkers
 
